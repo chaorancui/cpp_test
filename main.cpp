@@ -6,14 +6,6 @@
 #include <string>
 #include <vector>
 
-// using std::cin;
-// using std::cout;
-// using std::endl;
-// using std::greater;
-// using std::map;
-// using std::string;
-// using std::vector;
-
 using namespace std;
 
 struct TreeNode {
@@ -25,9 +17,12 @@ struct TreeNode {
   TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}
 };
 
+// 由数组构建完全/满二叉树
 TreeNode *constructBinaryTree(const vector<string> &vecstr, int i) {
-  if (vecstr.empty()) return nullptr;  // 特殊情况处理
-  if (i >= vecstr.size()) return nullptr;
+  if (vecstr.empty())
+    return nullptr;  // 特殊情况处理
+  if (i >= vecstr.size())
+    return nullptr;
   TreeNode *root = nullptr;
   if (vecstr[i] != "null") {
     root = new TreeNode(stoi(vecstr[i]));
@@ -39,20 +34,59 @@ TreeNode *constructBinaryTree(const vector<string> &vecstr, int i) {
 
 class Solution {
  public:
+  map<int, int> mapDepth;
   vector<int> depth;
   int cnt = 1;
-  void getDepth(TreeNode *root) {
-    if (root == nullptr) return;
-    depth.push_back(cnt);
-    cnt++;
-    getDepth(root->left);
-    getDepth(root->right);
-    cnt--;
+  // void getDepth(TreeNode *root) {
+  //   if (root == nullptr) return;
+  //   depth.push_back(cnt);
+  //   cnt++;
+  //   getDepth(root->left);
+  //   getDepth(root->right);
+  //   cnt--;
+  // }
+
+  void getDepth(TreeNode *root, int cntDepth) {
+    if (root == nullptr) {
+      return;
+    }
+    // mapDepth[root->val] = max(mapDepth[root->val], cntDepth); // 键值不存在，[]访问插入默认值；此处可用，不建议
+    pair<map<int, int>::iterator, bool> ret = mapDepth.insert(pair<int, int>(root->val, cntDepth));
+    // 已存在key，取最大val
+    if (!ret.second) {
+      (ret.first)->second = max((ret.first)->second, cntDepth);
+    }
+    getDepth(root->left, cntDepth + 1);
+    getDepth(root->right, cntDepth + 1);
+  }
+
+  vector<int> ValueDepth(const vector<int> &target, const TreeNode *root) {
+    if (!root) {
+      return {};
+    }
+    // 一次反向遍历，获取key大于当前key的节点的最大深度值
+    // for (auto it = mapDepth.rbegin() + 1; it != mapDepth.rend(); ++it) {
+    //     it->second = max(it->second, (it + 1)->second);
+    // }
+    // 一次反向遍历，获取key大于当前key的节点的最大深度值
+    auto it1 = mapDepth.rbegin();
+    auto it2 = it1;
+    for (it1++; it1 != mapDepth.rend(); ++it1, ++it2) {
+      it1->second = max(it1->second, (it2)->second);
+    }
+
+    vector<int> retVec;
+    for (const int &x : target) {
+      retVec.push_back(mapDepth.lower_bound(x)->second);
+    }
+    return retVec;
   }
 
   int maxDepth(TreeNode *root) {
-    if (!root) return 0;  // 特殊情况处理
-    getDepth(root);
+    if (!root) {
+      return 0;  // 特殊情况处理
+    }
+    getDepth(root, 1);
     sort(depth.begin(), depth.end(), less<int>());
     return depth.back();
   }
@@ -60,13 +94,9 @@ class Solution {
 
 int main() {
   Solution sol;
-  // stringstream sstr("3 9 20 null null 15 7");
-  // vector<string> vec;
-  // string s;
-  // while (sstr >> s) {
-  //   vec.push_back(s);
-  // }
-  stringstream sstr("3,9,20,null,null,15,7");
+
+  stringstream sstr;
+  sstr << "3,4,11,3,null,null,8,7,null,5";
   vector<string> vec;
   string s;
   while (getline(sstr, s, ',')) {
@@ -77,8 +107,20 @@ int main() {
   int treeDepth = log2(vec.size() + 1);
   cout << "treeDepth: " << treeDepth << endl;
 
-  TreeNode *root = constructBinaryTree(vec, 0);  // 递归构建完全二叉树
+  TreeNode *root = constructBinaryTree(vec, 0);  // 递归构建完全/满二叉树
 
-  cout << sol.maxDepth(root) << "====" << endl;
+  // sol.getDepth(root, 1);
+  // cout << sol.maxDepth(root) << "====" << endl;
+
+  ;
+  sstr.clear();
+  sstr << "6,2,9,7,9";
+  vector<int> target;
+  while (getline(sstr, s, ',')) {
+    target.push_back(stoi(s));
+  }
+  for_each(target.begin(), target.end(), [](const int x) { cout << x << endl; });
+  // vector<int> ans = sol.ValueDepth(target, root);
+  // for_each(ans.begin(), ans.end(), [](const int x) { cout << x << endl; });
   return 0;
 }
