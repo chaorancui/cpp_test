@@ -1,6 +1,10 @@
 {
     "files.associations": {
+<<<<<<< HEAD
         "xtree": "cpp",
         "utility": "cpp"
+=======
+        "xtree": "cpp"
+>>>>>>> 00483d32a1f382d95fbc7b5532cad8f36527b7d7
     }
 }
